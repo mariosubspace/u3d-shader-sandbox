@@ -52,6 +52,14 @@ float crossSDF(float2 uv, float s)
 	);
 }
 
+// Modified.
+float crossSDF(float2 uv, float s, float thick)
+{
+	return min(
+		rectSDF(uv, float2(s, thick)),
+		rectSDF(uv, float2(thick, s))
+	);
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // General functions inspired from deck.

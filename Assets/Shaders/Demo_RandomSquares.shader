@@ -1,4 +1,4 @@
-﻿Shader "MAG/Testing"
+﻿Shader "MAG/Demo/RandomSquares"
 {
 	Properties
 	{

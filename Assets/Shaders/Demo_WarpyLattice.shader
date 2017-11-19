@@ -1,4 +1,4 @@
-﻿Shader "MAG/Testing"
+﻿Shader "MAG/Demo/Warpy Lattice"
 {
 	Properties
 	{
@@ -61,26 +61,26 @@
 //				float2 pnt2 = fixed2(0.6, 0.4*cos(_Time.y) + 0.5);
 //				float val = exponential_in_out(sawtooth(i.uv.y + i.uv.x + _Time.y));
 				 
-				float4 col = float4(1, 1, 1, 1);
-			
-				int2 uvIdx = floor(i.uv*30.);
-				float switchSpeed = 0.38;
-				float rVal = step(0.45, rand_simple(uvIdx, floor(float2(_Time.y * switchSpeed, _Time.y * switchSpeed + 20.)), 2.)*.9);
+				float val = 0.;
+				float4 col = float4(yuv_to_rgb(float3(0.5, i.uv.x-0.0, i.uv.y-0.1)), 1);
+				fixed4 strokeCol = fixed4(1, 0.2, 0.2, 1);
 
 				float4 tiled = tile_space(i.uv, 4.0);
 				i.uv = tiled.xy;  
 
-				float sdfRect = rectSDF(i.uv, float2(1, 1));
-				float squareSpeed = 0.3;
-				float r = rand_simple(floor(sdfRect*10. - _Time.y * squareSpeed));
-				float g = rand_simple(floor(sdfRect*10. - _Time.y * squareSpeed + 10.));
-				float b = rand_simple(floor(sdfRect*10. - _Time.y * squareSpeed + 20.));
+				float eo = is_even(tiled.w) + is_even(3.0 - tiled.z);
+				eo = (1.0 - step(1.001, eo)) * eo;
 
-				float4 randCol = float4(r, g, b, 1);
+				float rVal = rand_simple(max(i.uv.x + 0.5, i.uv.y + 0.5))*.9; 
 
-				col = lerp(1.0 - randCol, randCol, rVal);
+				i.uv -= float2(0.5, 0.5);
+				i.uv = rotate(i.uv, lerp(1, -1, eo)*_Time.y);
+				i.uv += float2(0.5, 0.5); 
 
-				return col;
+				float sdfCross = crossSDF(i.uv, 1.);
+
+				val = fill(sdfCross, 1.8);
+				col = lerp(float4(0.25, 0.25, 0.25, 1), col, val * rVal); 
 
 				//col = lerp(col, fixed4(1, 0, 0, 1), plot_line(val, 0.01, i.uv));
 				// Add plot line.
