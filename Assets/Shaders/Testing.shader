@@ -60,50 +60,13 @@
 //				float2 pnt1 = fixed2(0.4, 0.4*sin(_Time.y) + 0.5);
 //				float2 pnt2 = fixed2(0.6, 0.4*cos(_Time.y) + 0.5);
 //				float val = exponential_in_out(sawtooth(i.uv.y + i.uv.x + _Time.y));
-				 
-				float4 col = float4(1, 1, 1, 1);
-			
-				int2 uvIdx = floor(i.uv*30.);
-				float switchSpeed = 0.38;
-				float rVal = step(0.45, rand_simple(uvIdx, floor(float2(_Time.y * switchSpeed, _Time.y * switchSpeed + 20.)), 2.)*.9);
 
-				float4 tiled = tile_space(i.uv, 4.0);
-				i.uv = tiled.xy;  
+//				i.uv -= float2(0.5, 0.5);
+//				i.uv = rotate(i.uv, vnoise_simple_smooth(_Time.y*0.2)*2 - 1.); 
+//				i.uv += float2(0.5, 0.5);
+//				float4 col = 1. - stroke(vnoise_simple_linear(i.uv*100.), sin(_Time.y)*0.2 + 0.7, 0.15);
 
-				float sdfRect = rectSDF(i.uv, float2(1, 1));
-				float squareSpeed = 0.3;
-				float r = rand_simple(floor(sdfRect*10. - _Time.y * squareSpeed));
-				float g = rand_simple(floor(sdfRect*10. - _Time.y * squareSpeed + 10.));
-				float b = rand_simple(floor(sdfRect*10. - _Time.y * squareSpeed + 20.));
-
-				float4 randCol = float4(r, g, b, 1);
-
-				col = lerp(1.0 - randCol, randCol, rVal);
-
-				return col;
-
-				//col = lerp(col, fixed4(1, 0, 0, 1), plot_line(val, 0.01, i.uv));
-				// Add plot line.
-//				float lineStrength = step(i.uv.y, val);
-//				float stMod = clamp(pow(1.0 - saturate(circular_ease_in(1.0 - i.uv.y / val)), 3.3), 0.01, 1);
-				// Modulate line strength.
-				//float4 tmpCol = lerp(fixed4(0.1, 0.1, 0.1, 1), fixed4(0.8, 0.05, 0.25, 1), stMod);
-				//col = lerp(col, tmpCol, stMod);
-//				col = lerp(col, fixed4(0.01, 1, 0.73, 1), stMod);
-//				// Add line segments.
-//				float lineSegmentA = line_segment(i.uv, fixed2(0,0), pnt1, 0.002);
-//				float lineSegmentB = line_segment(i.uv, fixed2(1,1), pnt2, 0.002);
-//				float lineSegmentC = line_segment(i.uv, pnt1, pnt2, 0.002);
-//				col = lerp(col, fixed4(0.3, 0.3, 0.3, 1), lineSegmentA + lineSegmentB + lineSegmentC);
-
-//				// Add point 1.
-//				float pointStrength1 = draw_point_smooth(pnt1, 0.012, i.uv);
-//				col = lerp(col, fixed4(0.3, 0.1, 1, 1), pointStrength1);
-//
-//				// Add point 2.
-//				float pointStrength2 = draw_point_smooth(pnt2, 0.012, i.uv);
-//				col = lerp(col, fixed4(0.3, 0.1, 1, 1), pointStrength2);
-
+				float4 col = float4(gnoise(i.uv*10.).xxx, 1 );    
 				return col;
 			}
 			ENDCG

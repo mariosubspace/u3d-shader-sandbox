@@ -6,8 +6,12 @@
 #include "PixelSpiritCG.cginc"
 #include "EasingsCG.cginc"
 #include "ColorSpaceCG.cginc"
+#include "NoiseCG.cginc"
+#include "InigoNoiseCG.cginc"
 
+/////////////////////////////////////
 ///// From: The Book of Shaders
+/////////////////////////////////////
 
 float plot_line(float y, float width, float2 uv)
 {
@@ -104,55 +108,9 @@ float4 tile_space(float2 uv, float times)
 	return float4(frac(scaledUV), floor(scaledUV));
 }
 
-
-
-// Gaussian-ish.
-float rand_simple(float t, float noisyness)
-{
-	return frac(sin(t) * 1000000. * noisyness);
-}
-
-// Gaussian-ish.
-float rand_simple(float t)
-{
-	// 1,000,000 is a good default frequency for the noise.
-	// lower and you still might get some of the pattern of the sine.
-	return rand_simple(t, 1.);
-}
-
-// 2D noise version.
-float rand_simple(float2 uv)
-{
-	// These magic numbers don't mean much, they're random.
-	return frac(sin(dot(uv, float2(12.9898, 78.233)))*43758.5453123);
-}
-
-float rand_simple(float2 uv, float2 seed)
-{
-	// These magic numbers don't mean much, they're random.
-	return frac(sin(dot(uv, seed))*43758.5453123);
-}
-
-float rand_simple(float2 uv, float noisyness)
-{
-	// These magic numbers don't mean much, they're random.
-	return frac(sin(dot(uv, float2(12.9898, 78.233)))*43758.5453123*noisyness);
-}
-
-float rand_simple(float2 uv, float2 seed, float noisyness)
-{
-	// These magic numbers don't mean much, they're random.
-	return frac(sin(dot(uv, seed))*43758.5453123*noisyness);
-}
-
-// Skewed toward 0.
-float rand_simple_sq(float t)
-{
-	float v = rand_simple(t);
-	return v*v;
-}
-
+/////////////////////////////////////
 ///// Personal Functions
+/////////////////////////////////////
 
 float is_odd(float n)
 {
