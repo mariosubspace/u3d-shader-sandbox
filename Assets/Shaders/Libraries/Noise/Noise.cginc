@@ -1,5 +1,5 @@
-#ifndef NOISE_CG
-#define NOISE_CG
+#ifndef NOISE_CGINC
+#define NOISE_CGINC
 
 /////////////////////////////////////
 ///// RANDOMNESS

@@ -1,5 +1,5 @@
-#ifndef INIGO_NOISE_CG
-#define INIGO_NOISE_CG
+#ifndef INIGO_NOISE_CGINC
+#define INIGO_NOISE_CGINC
 
 // The MIT License
 // Copyright © 2017 Inigo Quilez

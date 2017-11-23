@@ -1,7 +1,7 @@
-#ifndef PIXEL_SPIRIT_CG
-#define PIXEL_SPIRIT_CG
+#ifndef PIXEL_SPIRIT_CGINC
+#define PIXEL_SPIRIT_CGINC
 
-#include "MathConstantsCG.cginc"
+#include "MathConstants.cginc"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Useful functions from the Pixel Spirit Deck @PixelSpiritDeck

@@ -1,7 +1,7 @@
-#ifndef COLOR_SPACE_CG
-#define COLOR_SPACE_CG
+#ifndef COLOR_SPACE_CGINC
+#define COLOR_SPACE_CGINC
 
-#include "MathConstantsCG.cginc"
+#include "MathConstants.cginc"
 
 // Found at http://thebookofshaders.com/06/
 

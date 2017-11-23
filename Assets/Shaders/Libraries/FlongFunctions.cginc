@@ -1,5 +1,5 @@
-#ifndef FLONG_FUNCTIONS_CG
-#define FLONG_FUNCTIONS_CG
+#ifndef FLONG_FUNCTIONS_CGINC
+#define FLONG_FUNCTIONS_CGINC
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Shaping functions from flong.com.

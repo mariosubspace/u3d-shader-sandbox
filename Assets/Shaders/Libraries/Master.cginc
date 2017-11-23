@@ -1,13 +1,13 @@
-#ifndef MASTER_CG
-#define MASTER_CG
+#ifndef MASTER_CGINC
+#define MASTER_CGINC
 
-#include "FlongFunctionsCG.cginc"
-#include "InigoFunctionsCG.cginc"
-#include "PixelSpiritCG.cginc"
-#include "EasingsCG.cginc"
-#include "ColorSpaceCG.cginc"
-#include "NoiseCG.cginc"
-#include "InigoNoiseCG.cginc"
+#include "FlongFunctions.cginc"
+#include "InigoFunctions.cginc"
+#include "PixelSpirit.cginc"
+#include "Easings.cginc"
+#include "ColorSpace.cginc"
+#include "Noise/Noise.cginc"
+#include "Noise/InigoNoise.cginc"
 
 /////////////////////////////////////
 ///// From: The Book of Shaders

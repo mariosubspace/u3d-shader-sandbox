@@ -1,9 +1,9 @@
-#ifndef EASINGS_CG
-#define EASINGS_CG
+#ifndef EASINGS_CGINC
+#define EASINGS_CGINC
 
-#include "MathConstantsCG.cginc"
+#include "MathConstants.cginc"
 
-// Robert Penner's easing functions in GLSL ( and now in HLSL ^_^ )
+// Robert Penner's easing functions in GLSL
 // https://github.com/stackgl/glsl-easings
 // http://easings.net/
 
