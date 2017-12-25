@@ -18,7 +18,7 @@
 			#pragma fragment frag
 			
 			#include "UnityCG.cginc"
-			#include "Libraries/MasterCG.cginc"
+			#include "Libraries/Master.cginc"
 
 			struct appdata
 			{

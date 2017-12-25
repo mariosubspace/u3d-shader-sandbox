@@ -17,7 +17,7 @@
 			#pragma fragment frag
 			
 			#include "UnityCG.cginc"
-			#include "Libraries/MasterCG.cginc"
+			#include "Libraries/Master.cginc"
 
 			struct appdata
 			{
@@ -42,6 +42,16 @@
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = v.uv;
 				return o;
+			}
+
+			float the_summit(float2 uv)
+			{
+				float col;
+				col = stroke(circleSDF(uv - float2(0, 0.1)), 0.45, 0.1);
+				float tri = triSDF(uv + float2(0, 0.1));
+				col *= step(0.55, tri);
+				col += step(tri, 0.45);
+				return col;
 			}
 
 			fixed4 frag (v2f i) : SV_Target
@@ -115,6 +125,26 @@
 					case 12:
 					{
 						val = the_tower(i.uv); 
+						break;
+					}
+					case 13:
+					{
+						val = merge(i.uv);
+						break;
+					}
+					case 14:
+					{
+						val = hope(i.uv);
+						break;
+					}
+					case 15:
+					{
+						val = the_temple(i.uv);
+						break;
+					}
+					case 16:
+					{
+						val = the_summit(i.uv);
 						break;
 					}
 				}

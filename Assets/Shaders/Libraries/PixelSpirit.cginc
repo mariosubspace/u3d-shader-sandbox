@@ -61,6 +61,20 @@ float crossSDF(float2 uv, float s, float thick)
 	);
 }
 
+float vesicaSDF(float2 uv, float w)
+{
+	float2 offst = float2(.5 * w, 0);
+	return max(circleSDF(uv - offst), circleSDF(uv + offst));
+}
+
+float triSDF(float2 uv)
+{
+	uv = (uv * 2 - 1) * 2;
+	return max(
+		abs(uv.x) * 0.866025 + uv.y * 0.5,
+		-uv.y * 0.5 );
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // General functions inspired from deck.
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -167,6 +181,36 @@ float the_tower(float2 uv)
 	float rct = rectSDF(uv, float2(0.5, 1.));
 	float lne = (uv.y+uv.x)*.5;
 	return flip(fill(rct, .6), stroke(lne, .5, .01));
+}
+
+float merge(float2 uv)
+{
+	float col = 0;
+	float2 sep = float2(0.15, 0);
+
+	// Right circle.
+	col = fill(circleSDF(uv - sep), 0.525);
+
+	// Left circle.
+	col = flip(col, stroke(circleSDF(uv + sep), 0.5, 0.05));
+
+	return col;
+}
+
+float hope(float2 uv)
+{
+	float col = fill(vesicaSDF(uv, 0.2), 0.5);
+	return flip(col, step((uv.x + uv.y) * 0.5, 0.5));
+}
+
+float the_temple(float2 uv)
+{
+	float col;
+	uv.y = 1.0 - uv.y;
+	float2 uv2 = float2(uv.x, 0.825 - uv.y);
+	col = fill(triSDF(uv), 0.7);
+	col -= fill(triSDF(uv2), 0.36);
+	return col;
 }
 
 #endif
