@@ -75,6 +75,14 @@ float triSDF(float2 uv)
 		-uv.y * 0.5 );
 }
 
+float rhombSDF(float2 uv)
+{
+	float v = triSDF(uv);
+	uv.y = 1 - uv.y;
+	v = max(v, triSDF(uv));
+	return v;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // General functions inspired from deck.
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -210,6 +218,25 @@ float the_temple(float2 uv)
 	float2 uv2 = float2(uv.x, 0.825 - uv.y);
 	col = fill(triSDF(uv), 0.7);
 	col -= fill(triSDF(uv2), 0.36);
+	return col;
+}
+
+float the_diamond(float2 uv)
+{
+	float v = rhombSDF(uv);
+	float col = stroke(v, 0.6, 0.03);
+	col += stroke(v, 0.5, 0.05);
+	col += fill(v, 0.425);
+	return col;
+}
+
+float the_summit(float2 uv)
+{
+	float col;
+	col = stroke(circleSDF(uv - float2(0, 0.1)), 0.45, 0.1);
+	float tri = triSDF(uv + float2(0, 0.1));
+	col *= step(0.55, tri);
+	col += step(tri, 0.45);
 	return col;
 }
 

@@ -44,13 +44,23 @@
 				return o;
 			}
 
-			float the_summit(float2 uv)
+			float the_hermit(float2 uv)
 			{
-				float col;
-				col = stroke(circleSDF(uv - float2(0, 0.1)), 0.45, 0.1);
-				float tri = triSDF(uv + float2(0, 0.1));
-				col *= step(0.55, tri);
-				col += step(tri, 0.45);
+				float v = triSDF(uv);
+				float col = fill(v, 0.5);
+				v = rhombSDF(uv);
+				col -= fill(v, 0.4);
+				return col;
+			}
+
+			float intuition(float2 uv)
+			{
+				uv -= float2(0.5, 0.5);
+				uv = rotate(uv, -25);
+				uv += float2(0.5, 0.5);
+				float v = triSDF(uv);
+				v /= triSDF(uv + float2(0, 0.2));
+				float col = fill(v, 0.56);
 				return col;
 			}
 
@@ -145,6 +155,21 @@
 					case 16:
 					{
 						val = the_summit(i.uv);
+						break;
+					}
+					case 17:
+					{
+						val = the_diamond(i.uv);
+						break;
+					}
+					case 18:
+					{
+						val = the_hermit(i.uv);
+						break;
+					}
+					case 19:
+					{
+						val = intuition(i.uv);
 						break;
 					}
 				}
