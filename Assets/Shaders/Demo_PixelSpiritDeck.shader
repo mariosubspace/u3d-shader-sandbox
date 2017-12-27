@@ -22,7 +22,7 @@
 			struct appdata
 			{
 				float4 vertex : POSITION;
-				float2 uv : TEXCOORD0;
+				float2 uv : TEXCOORD0; 
 			};
 
 			struct v2f
@@ -44,25 +44,7 @@
 				return o;
 			}
 
-			float the_hermit(float2 uv)
-			{
-				float v = triSDF(uv);
-				float col = fill(v, 0.5);
-				v = rhombSDF(uv);
-				col -= fill(v, 0.4);
-				return col;
-			}
 
-			float intuition(float2 uv)
-			{
-				uv -= float2(0.5, 0.5);
-				uv = rotate(uv, -25);
-				uv += float2(0.5, 0.5);
-				float v = triSDF(uv);
-				v /= triSDF(uv + float2(0, 0.2));
-				float col = fill(v, 0.56);
-				return col;
-			}
 
 			fixed4 frag (v2f i) : SV_Target
 			{
@@ -170,6 +152,26 @@
 					case 19:
 					{
 						val = intuition(i.uv);
+						break;
+					}
+					case 20:
+					{
+						val = the_stone(i.uv);
+						break;
+					}
+					case 21:
+					{
+						val = the_mountain(i.uv);
+						break;
+					}
+					case 22:
+					{
+						val = the_shadow(i.uv);
+						break;
+					}
+					case 23:
+					{
+						val = opposite(i.uv);
 						break;
 					}
 				}

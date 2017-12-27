@@ -3,6 +3,105 @@
 
 #include "MathConstants.cginc"
 
+/////////////////////////////////////
+///// From: The Book of Shaders
+/////////////////////////////////////
+
+float plot_line(float y, float width, float2 uv)
+{
+	return smoothstep(y - width, y, uv.y) - smoothstep(y, y + width, uv.y);
+}
+
+float line_segment(float2 uv, float2 a, float2 b, float width, float fuzziness)
+{
+	float2 uva = uv - a;
+	float2 ba = b - a;
+	// Partial calculation for projection of A->UV to A->B.
+	float h = clamp(dot(uva, ba)/dot(ba, ba), 0.0, 1.0);
+
+	// This is the perpendicular distance from the current UV point to the line.
+	//    ba*h is the projected line A->UV onto A->B. Subtracting this from A->UV
+	//    leaves the perpendicular component.
+	float d = length(uva - ba*h);
+	// Use smoothstep to threshold this, the inversion gives the final line.
+	return 1.0 - smoothstep(width - fuzziness, width + fuzziness, d);
+}
+
+// Auto-smoothed with gradient trick.
+float line_segment(float2 uv, float2 a, float2 b, float width)
+{
+	float2 uva = uv - a;
+	float2 ba = b - a;
+	// Partial calculation for projection of A->UV to A->B.
+	float h = clamp(dot(uva, ba)/dot(ba, ba), 0.0, 1.0);
+
+	// This is the perpendicular distance from the current UV point to the line.
+	//    ba*h is the projected line A->UV onto A->B. Subtracting this from A->UV
+	//    leaves the perpendicular component.
+	float d = length(uva - ba*h);
+	float grad = length(float2(ddx(d), ddy(d)));
+	// Use smoothstep to threshold this, the inversion gives the final line.
+	return 1.0 - smoothstep(width - grad, width + grad, d);
+}
+
+// http://thebookofshaders.com/07/
+float circle_fast(float2 uv, float radius)
+{
+	float2 dist = uv - float2(0.5, 0.5);
+	return 1.0 - smoothstep(radius - (radius*0.01), radius + (radius*0.01), dot(dist, dist)*4.0);
+}
+
+float2 as_polar(float2 uv, float2 center)
+{
+	float2 pos = center - uv;
+    float r = length(pos)*2.0;
+    float a = atan2(pos.y, pos.x);
+    return float2(r, a);
+}
+
+// Rotates the space. It will rotate around the origin, so make sure
+// you move what you want to rotate to the center then move back after. 
+float2x2 rotate_mat(float angle)
+{
+	return float2x2(
+		cos(angle), -sin(angle),
+		sin(angle),  cos(angle)
+	);
+}
+
+float2x2 scale_mat(float2 s)
+{
+	return float2x2(
+		s.x, 0.0,
+		0.0, s.y
+	);
+}
+
+float2 rotate(float2 uv, float angle)
+{
+	return float2(
+		uv.x*cos(angle) - uv.y*sin(angle),
+		uv.x*sin(angle) + uv.y*cos(angle)
+	);
+}
+
+float2 scale(float2 uv, float2 s)
+{
+	return float2(uv.x*s.x, uv.y*s.y);
+}
+
+float2 scale(float2 uv, float s)
+{
+	return uv*s;
+}
+
+// Returns scaled UVs (xy) and x,y tile index (zw).
+float4 tile_space(float2 uv, float times)
+{
+	float2 scaledUV = uv * times;
+	return float4(frac(scaledUV), floor(scaledUV));
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Useful functions from the Pixel Spirit Deck @PixelSpiritDeck
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -237,6 +336,96 @@ float the_summit(float2 uv)
 	float tri = triSDF(uv + float2(0, 0.1));
 	col *= step(0.55, tri);
 	col += step(tri, 0.45);
+	return col;
+}
+
+float the_hermit(float2 uv)
+{
+	float v = triSDF(uv);
+	float col = fill(v, 0.5);
+	v = rhombSDF(uv);
+	col -= fill(v, 0.4);
+	return col;
+}
+
+float intuition(float2 uv)
+{
+	uv -= float2(0.5, 0.5);
+	uv = rotate(uv, -25);
+	uv += float2(0.5, 0.5);
+	float v = triSDF(uv);
+	v /= triSDF(uv + float2(0, 0.2));
+	float col = fill(v, 0.56);
+	return col;
+}
+
+float the_stone(float2 uv)
+{
+	uv -= float2(0.5, 0.5);
+	uv = rotate(uv, 3.14159 / 4);
+	uv += float2(0.5, 0.5);
+
+	float square = fill(rectSDF(uv, float2(1, 1)), 0.4);
+	float strokeForward = stroke(uv.y, 0.5, 0.02);
+	float strokeBack = stroke(uv.x, 0.5, 0.02);
+	float col = square * (1 - max(strokeBack, strokeForward));
+
+	return col;
+}
+
+float the_mountain(float2 uv)
+{
+	float col = 0; 
+
+	uv -= float2(0.5, 0.5);
+	uv = rotate(uv, 3.14159 / 4);
+	uv += float2(0.5, 0.5);
+
+	float2 ost = float2(0.12, 0.12);
+	float2 s = float2(1, 1);
+	col = fill(rectSDF(uv + ost, s), 0.2);
+	col += fill(rectSDF(uv - ost, s), 0.2);
+	float r = rectSDF(uv, s);
+	col *= step(0.33, r);
+	col += fill(r, 0.3);
+
+	return col;
+}
+
+float the_shadow(float2 uv)
+{
+	float col = 0;
+	float2 s = float2(1, 1);
+	float2 ost = float2(-0.025, 0.025);
+
+	uv -= float2(0.5, 0.5);
+	uv = rotate(uv, 3.14159 / 4);
+	uv += float2(0.5, 0.5);
+
+	float rTop = rectSDF(uv - ost, s);
+	float rBot = rectSDF(uv + ost, s);
+
+	col = max(fill(rTop, 0.4), fill(rBot, 0.4)) - fill(rTop, 0.38);
+
+	return col;
+}
+
+float opposite(float2 uv)
+{
+	float col = 0;
+
+	uv -= float2(0.5, 0.5);
+	uv = rotate(uv, 3.14159 / 4);
+	uv += float2(0.5, 0.5);
+
+	float2 ost = float2(0.05, 0.05);
+	float2 s = float2(1, 1);
+
+	float left  = fill(rectSDF(uv + ost, s), 0.4);
+	float right = fill(rectSDF(uv - ost, s), 0.4);
+
+	col = flip(left, right);
+
 	return col;
 }
 
