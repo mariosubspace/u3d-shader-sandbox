@@ -35,7 +35,6 @@
 			uniform float4 _BackgroundColor;
 			uniform float4 _ForegroundColor;
 
-
 			v2f vert (appdata v)
 			{
 				v2f o;
@@ -43,8 +42,6 @@
 				o.uv = v.uv;
 				return o;
 			}
-
-
 
 			fixed4 frag (v2f i) : SV_Target
 			{
@@ -172,6 +169,16 @@
 					case 23:
 					{
 						val = opposite(i.uv);
+						break;
+					}
+					case 24:
+					{
+						val = the_oak(i.uv);
+						break;
+					}
+					case 25:
+					{
+						val = ripples(i.uv);
 						break;
 					}
 				}

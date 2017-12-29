@@ -429,4 +429,62 @@ float opposite(float2 uv)
 	return col;
 }
 
+float the_oak(float2 uv)
+{
+	float col;
+	float2 s = float2(1, 1);
+
+	uv -= float2(0.5, 0.5);
+	uv = rotate(uv, 3.14159 / 4);
+	uv += float2(0.5, 0.5);
+
+	float r1 = rectSDF(uv, s);
+	float r2 = rectSDF(uv + float2(-0.155, 0.155), s);
+
+	const float MAIN_SIZE = 0.5;
+	const float BOT_SIZE = 0.325;
+	const float STROKE = 0.05;
+	const float HALF_STROKE = STROKE / 2;
+
+	// Main square:
+	// Draw main square (full) outline.
+	col = stroke(r1, MAIN_SIZE, STROKE);
+	// Mask out bottom section.
+	col *= step(BOT_SIZE + HALF_STROKE, r2);
+	// Stroke the bottom square outer size.
+	col += stroke(r2, BOT_SIZE, STROKE)
+		* fill(r1, MAIN_SIZE + HALF_STROKE); // Mask out only the part over the main square.
+
+	// Bottom square:
+	col += stroke(r2, BOT_SIZE * 0.585, STROKE);
+
+	return col;
+}
+
+float ripples(float2 uv)
+{
+	float col = 0;
+
+	uv -= float2(0.5, 0.5);
+	uv = rotate(uv, 3.14159 / 4);
+	uv += float2(0.5, 0.5);
+
+	float2 s = float2(1, 1);
+	const float COUNT = 4;
+	const float OFST = 0.08;
+	const float SIZE = 0.3;
+	const float STROKE = 0.045;
+
+	float len = (COUNT - 1) * OFST;
+	float pos = -(len / 2);
+
+	for (int i = 0; i < COUNT; ++i)
+	{
+		col = max(col, stroke(rectSDF(uv + float2(pos, pos), s), SIZE, STROKE));
+		pos += OFST;
+	}
+
+	return col;
+}
+
 #endif
