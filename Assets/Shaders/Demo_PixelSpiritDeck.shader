@@ -35,6 +35,46 @@
 			uniform float4 _BackgroundColor;
 			uniform float4 _ForegroundColor;
 
+			float polySDF(float2 uv, int n)
+			{
+				uv = 2.0 * uv - 1.0;
+				uv = rotate(uv, -HALF_PI);
+				float r = length(uv);
+				float a = atan2(uv.y, uv.x) + PI;
+				float v = TAU / float(n);
+				return cos(floor(.5 + a/v)*v - a)*r;
+				return a / TAU;
+			}
+
+			float polySDF(float2 uv, int n, float cosOffset)
+			{
+				uv = 2.0 * uv - 1.0;
+				float r = length(uv);
+				float a = atan2(uv.y, uv.x) + PI;
+				float v = TAU / float(n);
+				return cos(floor(a/v)*v - a + cosOffset)*r;
+				return a / TAU;
+			}
+
+			float the_empress(float2 uv)
+			{
+				float d1 = polySDF(uv, 5);
+				float2 ts = float2(uv.x, 1.0 - uv.y);
+				float d2 = polySDF(ts, 5);
+				float col = fill(d1, .75) * fill(frac(d1*5), 0.5);
+				//col -= fill(d2, .6) * fill(frac(d2*4.9), 0.45);
+				return col;
+			}
+
+			float3 weird_hex_rotator(float2 uv)
+			{
+				float3 col;
+				col.r = fill(polySDF(uv, 5, _Time.y), 0.5);
+				col.g = fill(polySDF(uv, 5, cos(_Time.y + 0.1)), 0.5);
+				col.b = fill(polySDF(uv, 5, sin(_Time.y + 0.5)), 0.5);
+				return col;
+			}
+
 			v2f vert (appdata v)
 			{
 				v2f o;
@@ -179,6 +219,11 @@
 					case 25:
 					{
 						val = ripples(i.uv);
+						break;
+					}
+					case 26:
+					{
+						val = the_empress(i.uv);
 						break;
 					}
 				}
