@@ -46,6 +46,17 @@
 				return a / TAU;
 			}
 
+			// Rotate by -HALF_PI to align to y axis.
+			// Scale to -1, 1 to get canonical effect.
+			float polySDF_plain(float2 uv, int n)
+			{
+				float r = length(uv);
+				float a = atan2(uv.y, uv.x) + PI;
+				float v = TAU / float(n);
+				return cos(floor(.5 + a/v)*v - a)*r;
+				return a / TAU;
+			}
+
 			float polySDF(float2 uv, int n, float cosOffset)
 			{
 				uv = 2.0 * uv - 1.0;
@@ -59,11 +70,36 @@
 			float the_empress(float2 uv)
 			{
 				float d1 = polySDF(uv, 5);
-				float2 ts = float2(uv.x, 1.0 - uv.y);
-				float d2 = polySDF(ts, 5);
 				float col = fill(d1, .75) * fill(frac(d1*5), 0.5);
-				//col -= fill(d2, .6) * fill(frac(d2*4.9), 0.45);
+
+				uv = float2(uv.x, 1.0 - uv.y);
+				float d2 = polySDF(uv, 5);
+				col -= fill(d1, .5) * fill(frac(d2*4.9), 0.45);
+				col = saturate(col); // clamp the negative values.
+
 				return col;
+			}
+
+			float bundle(float2 uv)
+			{
+				uv = 2*uv - 1;
+				//uv = rotate(uv, -PI/6);
+
+				float d = fill(
+					polySDF_plain(uv - float2(-.16, -0.096), 6),
+					0.12);
+
+				d += fill(
+					polySDF_plain(uv - float2( .16, -0.096), 6),
+					0.12);
+
+				d += fill(
+					polySDF_plain(uv - float2(0, .176), 6),
+					0.12);
+
+				d += stroke(polySDF_plain(uv, 6), .5, .1);
+
+				return d;
 			}
 
 			float3 weird_hex_rotator(float2 uv)
@@ -224,6 +260,11 @@
 					case 26:
 					{
 						val = the_empress(i.uv);
+						break;
+					}
+					case 27:
+					{
+						val = bundle(i.uv);
 						break;
 					}
 				}
