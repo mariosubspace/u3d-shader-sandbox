@@ -44,6 +44,36 @@
 				return col;
 			}
 
+			float the_star(float2 uv)
+			{
+				float starIn = starSDF(uv, 6, 0.1);
+
+				// Shift origin.
+				uv -= float2(0.5, 0.5);
+
+				// Get the angle around the origin, normalized to [0, 1].
+				float fan = fanSDF(uv, 8);
+				fan = stroke(fan, 0.5, 0.15);
+
+				// Rotate.
+				uv = rotate(uv, PI/6);
+				
+				// Shift origin back.
+				uv += float2(0.5, 0.5);
+
+				float starOut = starSDF(uv, 6, 0.1);
+
+				float col = fan;
+				col -= fill(starOut, 0.7);
+				col = saturate(col); // Clamp cause next op will undo.
+				col += fill(starOut, 0.5);
+				col += stroke(starOut, 0.6, 0.05);
+				col -= fill(starIn, 0.26);
+				col += fill(starIn, 0.2);
+
+				return col;
+			}
+
 			v2f vert(appdata v)
 			{
 				v2f o;
@@ -208,6 +238,11 @@
 					case 29:
 					{
 						val = the_sun(i.uv);
+						break;
+					}
+					case 30:
+					{
+						val = the_star(i.uv);
 						break;
 					}
 				}

@@ -231,6 +231,27 @@ float starSDF(float2 uv, int n, float s)
 	return abs(dot(float2(cos(a), sin(a)), uv));
 }
 
+// A fan-type SDF. You must shift the origin to the
+// center if you want the fan to come from the center.
+// 'n' is the number of blades. Normalized to [0, 1]
+// values by default.
+float fanSDF(float2 uv, int n)
+{
+	float a = (atan2(uv.y, uv.x) + PI) / TAU;
+	a = frac(a*n);
+	return a;
+}
+
+// From the PSD, same as fan but shifts the
+// space by default.
+float raysSDF(float2 uv, int n)
+{
+	uv -= .5;
+	float a = fanSDF(uv, n);
+	uv += .5;
+	return a;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // General functions inspired from deck.
 /////////////////////////////////////////////////////////////////////////////////////////////////
