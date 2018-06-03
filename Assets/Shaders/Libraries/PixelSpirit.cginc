@@ -182,6 +182,55 @@ float rhombSDF(float2 uv)
 	return v;
 }
 
+float polySDF(float2 uv, int n)
+{
+	uv = 2.0 * uv - 1.0;
+	uv = rotate(uv, -HALF_PI);
+	float r = length(uv);
+	float a = atan2(uv.y, uv.x) + PI;
+	float v = TAU / float(n);
+	return cos(floor(.5 + a/v)*v - a)*r;
+	return a / TAU;
+}
+
+// Rotate by -HALF_PI to align to y axis.
+// Scale to -1, 1 to get canonical effect.
+float polySDF_plain(float2 uv, int n)
+{
+	float r = length(uv);
+	float a = atan2(uv.y, uv.x) + PI;
+	float v = TAU / float(n);
+	return cos(floor(.5 + a/v)*v - a)*r;
+	return a / TAU;
+}
+
+float polySDF(float2 uv, int n, float cosOffset)
+{
+	uv = 2.0 * uv - 1.0;
+	float r = length(uv);
+	float a = atan2(uv.y, uv.x) + PI;
+	float v = TAU / float(n);
+	return cos(floor(a/v)*v - a + cosOffset)*r;
+	return a / TAU;
+}
+
+float hexSDF(float2 uv)
+{
+	uv = abs(2*uv - 1);
+	return max(abs(uv.y), uv.x * 0.866025 + uv.y * 0.5);
+}
+
+float starSDF(float2 uv, int n, float s)
+{
+	uv = 4*uv - 2;
+	float a = atan2(uv.y, uv.x) / TAU;
+	float seg = a * float(n);
+	a = ((floor(seg) + 0.5) / float(n) +
+		lerp(s, -s, step(.5, frac(seg))))
+		* TAU;
+	return abs(dot(float2(cos(a), sin(a)), uv));
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // General functions inspired from deck.
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -484,6 +533,81 @@ float ripples(float2 uv)
 		pos += OFST;
 	}
 
+	return col;
+}
+
+float the_empress(float2 uv)
+{
+	float d1 = polySDF(uv, 5);
+	float col = fill(d1, .75) * fill(frac(d1*5), 0.5);
+
+	uv = float2(uv.x, 1.0 - uv.y);
+	float d2 = polySDF(uv, 5);
+	col -= fill(d1, .5) * fill(frac(d2*4.9), 0.45);
+	col = saturate(col); // clamp the negative values.
+
+	return col;
+}
+
+float bundle(float2 uv)
+{
+	uv = 2*uv - 1;
+
+	float d = fill(
+		polySDF_plain(uv - float2(-.16, -0.096), 6),
+		0.12);
+
+	d += fill(
+		polySDF_plain(uv - float2( .16, -0.096), 6),
+		0.12);
+
+	d += fill(
+		polySDF_plain(uv - float2(0, .176), 6),
+		0.12);
+
+	d += stroke(polySDF_plain(uv, 6), .5, .1);
+
+	return d;
+}
+
+float the_devil(float2 uv)
+{
+	float col = stroke(circleSDF(uv), .8, .05);
+	uv.y = 1 - uv.y;
+	float s = starSDF(uv.yx, 5, .1);
+	col *= step(.7, s);
+	col += stroke(s, .4, .1);
+	return col;
+}
+
+float the_sun(float2 uv)
+{
+	uv -= float2(0.5, 0.5);
+	uv *= 1.5;
+	uv += float2(0.5, 0.5);
+
+	float col = 0;
+	float bg = starSDF(uv, 16, .1);
+	col += fill(bg, 1.3);
+	float L = 0;
+	for (float i = 0; i < 8; ++i)
+	{
+		float2 xy = uv;
+		xy -= float2(0.5, 0.5);
+		xy = rotate(xy, QTR_PI*i);
+		xy += float2(0.5, 0.5); 
+		xy.y -= .3;
+		float tri = polySDF(xy, 3);
+		col += fill(tri, .3);
+		col = saturate(col);
+		L += stroke(tri, .3, .03);
+	}
+	col *= 1 - L;
+
+	float c = polySDF(uv, 8);
+	col -= stroke(c, .15, .04);
+	col = saturate(col);
+	
 	return col;
 }
 
