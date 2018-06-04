@@ -74,6 +74,20 @@
 				return col;
 			}
 
+			float judgement(float2 uv)
+			{
+				float f = fanSDF(uv - 0.5, 28);
+				f = stroke(f, 0.5, 0.2);
+				float h = step(uv.y, 0.5);
+				float bg = flip(f, h);
+
+				float sq = rectSDF(uv, float2(0.5, 0.5));
+				float col = saturate(bg - fill(sq, 0.45));
+				col += fill(sq, 0.37);
+
+				return col;
+			}
+
 			v2f vert(appdata v)
 			{
 				v2f o;
@@ -243,6 +257,11 @@
 					case 30:
 					{
 						val = the_star(i.uv);
+						break;
+					}
+					case 31:
+					{
+						val = judgement(i.uv);
 						break;
 					}
 				}
