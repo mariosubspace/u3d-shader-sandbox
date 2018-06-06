@@ -59,6 +59,51 @@ float2 as_polar(float2 uv, float2 center)
     return float2(r, a);
 }
 
+float3x3 rotate_mat3x3(float angle)
+{
+	return float3x3(
+		cos(angle), -sin(angle), 0,
+		sin(angle),  cos(angle), 0,
+		0,           0,          1
+	);
+}
+
+float3x3 translate_mat3x3(float2 d)
+{
+	return float3x3(
+		1, 0, d.x,
+		0, 1, d.y,
+		0, 0,   1
+	);
+}
+
+float3x3 scale_mat3x3(float2 s)
+{
+	return float3x3(
+		s.x, 0, 0,
+		0, s.y, 0,
+		0,   0, 1
+	);
+}
+
+float2 apply_mat(float3x3 mat, float2 uv)
+{
+	float3 uv3 = float3(uv, 1);
+	float3 newUV = mul(mat, uv3);
+	newUV.x /= newUV.z;
+	newUV.y /= newUV.z;
+	return newUV.xy;
+}
+
+// Assuming default UVs, translates origin to center then
+// rotates.
+float3x3 rotate_at_center_mat3x3(float angle)
+{
+	return mul(translate_mat3x3(float2(0.5, 0.5)),
+		mul(rotate_mat3x3(angle),
+		translate_mat3x3(float2(-0.5, -0.5))));
+}
+
 // Rotates the space. It will rotate around the origin, so make sure
 // you move what you want to rotate to the center then move back after. 
 float2x2 rotate_mat(float angle)
@@ -83,6 +128,14 @@ float2 rotate(float2 uv, float angle)
 		uv.x*cos(angle) - uv.y*sin(angle),
 		uv.x*sin(angle) + uv.y*cos(angle)
 	);
+}
+
+float2 rotate_at_center(float2 uv, float angle)
+{
+	float2 uv2 = uv - 0.5;
+	uv2 = rotate(uv2, angle);
+	uv2 += 0.5;
+	return uv2;
 }
 
 float2 scale(float2 uv, float2 s)
@@ -125,6 +178,16 @@ float fill(float x, float size)
 float flip(float x, float t)
 {
 	return lerp(x, 1.0 - x, t);
+}
+
+// Stroke distance field 'd' over b&w bg 'c',
+// with stroke slice position 's' and width 'w'.
+// It will subtract a border around the 'd' stroke
+// from bg 'c' at twice the width 'w'.
+float bridge(float3 c, float d, float s, float w)
+{
+	c *= 1. - stroke(d, s, w*2.);
+	return c + stroke(d, s, w);
 }
 
 // Circle SDF centered at origin with radius 0.5.
@@ -250,6 +313,16 @@ float raysSDF(float2 uv, int n)
 	float a = fanSDF(uv, n);
 	uv += .5;
 	return a;
+}
+
+float heartSDF(float2 uv)
+{
+	uv -= float2(0.5, 0.8);
+	float r = length(uv)*5.;
+	uv = normalize(uv);
+	return r -
+		((uv.y*pow(abs(uv.x), 0.67))/
+		(uv.y+1.5)-(2.0)*uv.y+1.26);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -629,6 +702,159 @@ float the_sun(float2 uv)
 	col -= stroke(c, .15, .04);
 	col = saturate(col);
 	
+	return col;
+}
+
+float the_star(float2 uv)
+{
+	float starIn = starSDF(uv, 6, 0.1);
+
+	// Shift origin.
+	uv -= float2(0.5, 0.5);
+
+	// Get the angle around the origin, normalized to [0, 1].
+	float fan = fanSDF(uv, 8);
+	fan = stroke(fan, 0.5, 0.15);
+
+	// Rotate.
+	uv = rotate(uv, PI/6);
+	
+	// Shift origin back.
+	uv += float2(0.5, 0.5);
+
+	float starOut = starSDF(uv, 6, 0.1);
+
+	float col = fan;
+	col -= fill(starOut, 0.7);
+	col = saturate(col); // Clamp cause next op will undo.
+	col += fill(starOut, 0.5);
+	col += stroke(starOut, 0.6, 0.05);
+	col -= fill(starIn, 0.26);
+	col += fill(starIn, 0.2);
+
+	return col;
+}
+
+float judgement(float2 uv)
+{
+	float f = fanSDF(uv - 0.5, 28);
+	f = stroke(f, 0.5, 0.2);
+	float h = step(uv.y, 0.5);
+	float bg = flip(f, h);
+
+	float sq = rectSDF(uv, float2(0.5, 0.5));
+	float col = saturate(bg - fill(sq, 0.45));
+	col += fill(sq, 0.37);
+
+	return col;
+}
+
+float wheel_of_fortune(float2 uv)
+{
+	float octD = polySDF(uv, 8);
+	float rays = stroke(fanSDF(uv - 0.5, 8), 0.5, 0.2);
+
+	float s = stroke(octD, 0.6, 0.1);
+	s += stroke(octD, 0.2, 0.05);
+	s += rays * stroke(octD, 0.388, 0.23);
+
+	return s;
+}
+
+float vision(float2 uv)
+{
+	// Background.
+	float vv = vesicaSDF(uv, 0.4);
+	vv = fill(vv, 0.96);
+	float col = stroke(fanSDF(uv - 0.5, 50), 0.5, 0.17);
+	col *= vv;
+
+	// Eye outline.
+	float2 uv2 = apply_mat(
+		rotate_at_center_mat3x3(PI/2), uv);
+	float hv = vesicaSDF(uv2, 0.5);
+	float e = stroke(hv, 0.73, 0.035);
+	float em = fill(hv, 0.74);
+	col *= 1 - em;
+	col += e;
+
+	// Iris.
+	float cd = circleSDF(uv - float2(0, 0.036));
+	col += stroke(cd, 0.24, 0.038) * em;
+
+	return col;
+}
+
+float the_lovers(float2 uv)
+{
+	float col = fill(heartSDF(uv), 0.5);
+	col -= stroke(polySDF(uv, 3), .15, .05);
+	return saturate(col);
+}
+
+float the_magician(float2 uv)
+{
+	// This first line is the magic,
+	// it flips the x coords where 
+	// y < 0.5.
+	uv.x = flip(uv.x, step(0.5, uv.y));
+
+	// The idea is to overlap one circle
+	// over the other with a black border
+	// for the overlapping one. The 'bridge'
+	// function makes this easy.
+	// Because the uv.x coords are flipped
+	// halfway, one overlapping side will be
+	// flipped making it appear that the
+	// rings are interlinked.
+	float2 offset = float2(.15, .0);
+	float left = circleSDF(uv + offset);
+	float right = circleSDF(uv - offset);
+	float col = stroke(left, .4, .075);
+	col = bridge(col, right, .4, .075);
+	return saturate(col);
+}
+
+float the_link(float2 uv)
+{
+	float rtp = fill(rhombSDF(uv - float2(0,  0.35)), .07);
+	float rbt = fill(rhombSDF(uv - float2(0, -0.35)), .07);
+	uv.y = flip(uv.y, step(0.5, uv.x));
+	float2 offset = float2(0, .07);
+
+	float2 rotUVTop = uv - offset;
+	rotUVTop -= .5;
+	rotUVTop = rotate(rotUVTop, PI/4);
+	rotUVTop += .5;
+
+	float2 rotUVBot = uv + offset;
+	rotUVBot -= .5;
+	rotUVBot = rotate(rotUVBot, PI/4);
+	rotUVBot += .5;
+
+	float top = rectSDF(rotUVTop, float2(.5,.5));
+	float bot = rectSDF(rotUVBot, float2(.5,.5));
+	
+	float col = stroke(top, .4, .12);
+	col = bridge(col, bot, .4, .12);
+	col += rtp + rbt;
+	return col;
+}
+
+// Slightly different implementation than PSD but similar concept.
+float holding_together(float2 uv)
+{
+	uv.x = flip(uv.x, step(0.5, uv.y));
+	float2 off = float2(0.0635, 0);
+	float right = rectSDF(rotate_at_center(uv - off, PI/4), float2(.5,.5));
+	float left = rectSDF(rotate_at_center(uv + off, PI/4), float2(.5,.5));
+	float col = fill(right, 0.48);
+	col -= fill(left, 0.6);
+	col = saturate(col);
+	col += fill(left, 0.48);
+	col -= fill(left, 0.23);
+	col = saturate(col);
+	col += fill(left, 0.13);
 	return col;
 }
 

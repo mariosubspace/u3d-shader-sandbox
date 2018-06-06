@@ -44,50 +44,6 @@
 				return col;
 			}
 
-			float the_star(float2 uv)
-			{
-				float starIn = starSDF(uv, 6, 0.1);
-
-				// Shift origin.
-				uv -= float2(0.5, 0.5);
-
-				// Get the angle around the origin, normalized to [0, 1].
-				float fan = fanSDF(uv, 8);
-				fan = stroke(fan, 0.5, 0.15);
-
-				// Rotate.
-				uv = rotate(uv, PI/6);
-				
-				// Shift origin back.
-				uv += float2(0.5, 0.5);
-
-				float starOut = starSDF(uv, 6, 0.1);
-
-				float col = fan;
-				col -= fill(starOut, 0.7);
-				col = saturate(col); // Clamp cause next op will undo.
-				col += fill(starOut, 0.5);
-				col += stroke(starOut, 0.6, 0.05);
-				col -= fill(starIn, 0.26);
-				col += fill(starIn, 0.2);
-
-				return col;
-			}
-
-			float judgement(float2 uv)
-			{
-				float f = fanSDF(uv - 0.5, 28);
-				f = stroke(f, 0.5, 0.2);
-				float h = step(uv.y, 0.5);
-				float bg = flip(f, h);
-
-				float sq = rectSDF(uv, float2(0.5, 0.5));
-				float col = saturate(bg - fill(sq, 0.45));
-				col += fill(sq, 0.37);
-
-				return col;
-			}
-
 			v2f vert(appdata v)
 			{
 				v2f o;
@@ -262,6 +218,36 @@
 					case 31:
 					{
 						val = judgement(i.uv);
+						break;
+					}
+					case 32:
+					{
+						val = wheel_of_fortune(i.uv);
+						break;
+					}
+					case 33:
+					{
+						val = vision(i.uv);
+						break;
+					}
+					case 34:
+					{
+						val = the_lovers(i.uv);
+						break;
+					}
+					case 35:
+					{
+						val = the_magician(i.uv);
+						break;
+					}
+					case 36:
+					{
+						val = the_link(i.uv);
+						break;
+					}
+					case 37:
+					{
+						val = holding_together(i.uv);
 						break;
 					}
 				}
