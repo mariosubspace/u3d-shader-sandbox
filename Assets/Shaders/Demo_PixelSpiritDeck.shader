@@ -44,6 +44,15 @@
 				return col;
 			}
 
+			float the_chariot(float2 uv)
+			{
+				float square1 = rectSDF(uv, float2(1,1));
+				float square2 = rectSDF(rotate_at_center(uv, PI/4), float2(1,1));
+				float col = stroke(square1, .5, .08);
+				col = bridge(col, square2, .5, .08);
+				return col;
+			}
+
 			v2f vert(appdata v)
 			{
 				v2f o;
@@ -248,6 +257,11 @@
 					case 37:
 					{
 						val = holding_together(i.uv);
+						break;
+					}
+					case 38:
+					{
+						val = the_chariot(i.uv);
 						break;
 					}
 				}
