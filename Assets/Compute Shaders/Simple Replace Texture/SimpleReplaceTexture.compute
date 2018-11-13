@@ -1,0 +1,18 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+
+// 'numthreads' (HLSL) specifies number of threads in a thread group
+// The dimensionality (x, y, z) really only helps in indexing the data, e.g., if it's an image it
+// helps to use 2 dimensions, you can use a single dimension if it's not 2D data.
+// The total number of threads (X*Y*Z) should be a multiple of the thread group size.
+// For _Nvidia_ a thread group is called a _warp_ and is _32_ threads big.
+// For _AMD_ a thread group is called a _wavefront_ and _64_ threads big.
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+	Result[id.xy] = float4(id.x / 256., id.y / 256., 0, 0.0);
+}

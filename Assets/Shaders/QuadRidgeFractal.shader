@@ -1,4 +1,4 @@
-﻿Shader "Mario/Testing"
+﻿Shader "Mario/Quad/RidgeFractal"
 {
 	Properties
 	{
@@ -12,6 +12,8 @@
 	{
 		Tags { "RenderType"="Opaque"}
 
+		Cull Off
+
 		Pass
 		{
 			CGPROGRAM
@@ -19,8 +21,7 @@
 			#pragma fragment frag
 			
 			#include "UnityCG.cginc"
-			#include "Libraries/NoiseFBM.cginc" 
-			#include "Libraries/UtilGeneral.cginc"
+			#include "Libraries/NoiseFBM.cginc"
 
 			struct appdata
 			{
@@ -49,11 +50,6 @@
 			float _Amplitude;
 			float _Frequency;
 
-			float fbm(float2 uv)
-			{
-				return vsfbm(uv, _Octaves, _Lacunarity, _Gain, _Amplitude, _Frequency);
-			}
-
 			fixed4 frag (v2f i) : SV_Target
 			{
 				//return fixed4(map_hsb_polar(i.uv), 1) ;
@@ -77,26 +73,12 @@
 //				float2 pnt2 = fixed2(0.6, 0.4*cos(_Time.y) + 0.5);
 //				float val = exponential_in_out(sawtooth(i.uv.y + i.uv.x + _Time.y));
 
-				i.uv -= float2(0.5, 0.5);
-				i.uv = rotate(i.uv, 180); 
-				i.uv += float2(0.5, 0.5);
+//				i.uv -= float2(0.5, 0.5);
+//				i.uv = rotate(i.uv, snoise((_Time.y*0.04).xx)*2 - 1.); 
+//				i.uv += float2(0.5, 0.5);
 
 				//float4 col = fixed4(vstfbm(i.uv, _Octaves, _Lacunarity, _Gain, _Amplitude, _Frequency).xxx, 1);
-
-				float r = fbm(i.uv + fbm(i.uv + fbm(i.uv)) + _Time.y * 0.4);
-
-				i.uv -= float2(0.5, 0.5);
-				i.uv = rotate(i.uv, 90); 
-				i.uv += float2(0.5, 0.5);
-
-				float g = fbm(i.uv + fbm(i.uv + fbm(i.uv + _Time.y * 0.01)) + 0.25);
-
-				i.uv -= float2(0.5, 0.5);
-				i.uv = rotate(i.uv, 90); 
-				i.uv += float2(0.5, 0.5);
-
-				float b = fbm(i.uv + fbm(i.uv + fbm(i.uv) + _Time.y * 0.4) + 0.5);
-				float4 col = fixed4(r, g, b, 1);
+				float4 col = fixed4(vsrfbm(i.uv, _Octaves, _Lacunarity, _Gain, _Amplitude, _Frequency, 5).xxx, 1);
 				return col; 
 			}
 			ENDCG

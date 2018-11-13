@@ -1,0 +1,15 @@
+﻿// This script adapted from Claire Blackshaw's tutorial on Unity Compute Shaders:
+// https://www.youtube.com/watch?v=qDk-WIOYUSY
+
+#pragma kernel CSMain
+
+#include "Assets/Shaders/Libraries/NoiseSimplex3D.cginc"
+
+int RandOffset;
+RWTexture2D<float4> Result;
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+	Result[id.xy] = snoise(float3(id.x, id.y, RandOffset));
+}

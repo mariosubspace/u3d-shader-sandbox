@@ -1,16 +1,13 @@
-﻿Shader "Mario/Testing"
+﻿Shader "Mario/Quad/Noise City"
 {
 	Properties
 	{
-		_Octaves ("Octaves", Int) = 1
-		_Lacunarity ("Lacunarity", Float) = 2.0
-		_Gain ("Gain", Float) = 0.5
-		_Amplitude ("Amplitude", Float) = 0.5
-		_Frequency ("Frequency", Float) = 1
 	}
 	SubShader
 	{
 		Tags { "RenderType"="Opaque"}
+
+		Cull Off
 
 		Pass
 		{
@@ -19,8 +16,9 @@
 			#pragma fragment frag
 			
 			#include "UnityCG.cginc"
-			#include "Libraries/NoiseFBM.cginc" 
 			#include "Libraries/UtilGeneral.cginc"
+			#include "Libraries/NoiseValue.cginc"
+			#include "Libraries/NoiseSimplex2D.cginc"
 
 			struct appdata
 			{
@@ -43,16 +41,6 @@
 				return o;
 			}
 
-			int _Octaves;
-			float _Lacunarity;
-			float _Gain;
-			float _Amplitude;
-			float _Frequency;
-
-			float fbm(float2 uv)
-			{
-				return vsfbm(uv, _Octaves, _Lacunarity, _Gain, _Amplitude, _Frequency);
-			}
 
 			fixed4 frag (v2f i) : SV_Target
 			{
@@ -78,26 +66,12 @@
 //				float val = exponential_in_out(sawtooth(i.uv.y + i.uv.x + _Time.y));
 
 				i.uv -= float2(0.5, 0.5);
-				i.uv = rotate(i.uv, 180); 
+				i.uv = rotate(i.uv, snoise((_Time.y*0.04).xx)*2 - 1.); 
 				i.uv += float2(0.5, 0.5);
+				float4 col = 1. - stroke(vnoise_simple_linear(i.uv*80.), sin(_Time.y)*0.2 + 0.7, 0.15);
 
-				//float4 col = fixed4(vstfbm(i.uv, _Octaves, _Lacunarity, _Gain, _Amplitude, _Frequency).xxx, 1);
-
-				float r = fbm(i.uv + fbm(i.uv + fbm(i.uv)) + _Time.y * 0.4);
-
-				i.uv -= float2(0.5, 0.5);
-				i.uv = rotate(i.uv, 90); 
-				i.uv += float2(0.5, 0.5);
-
-				float g = fbm(i.uv + fbm(i.uv + fbm(i.uv + _Time.y * 0.01)) + 0.25);
-
-				i.uv -= float2(0.5, 0.5);
-				i.uv = rotate(i.uv, 90); 
-				i.uv += float2(0.5, 0.5);
-
-				float b = fbm(i.uv + fbm(i.uv + fbm(i.uv) + _Time.y * 0.4) + 0.5);
-				float4 col = fixed4(r, g, b, 1);
-				return col; 
+				//float4 col = float4(cnoise(i.uv*20.).xxx, 1 );    
+				return col;
 			}
 			ENDCG
 		}

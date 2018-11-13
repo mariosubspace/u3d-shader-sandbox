@@ -1,4 +1,4 @@
-﻿Shader "Mario/Testing"
+﻿Shader "Mario/Quad/Fractal Noise"
 {
 	Properties
 	{
@@ -12,6 +12,8 @@
 	{
 		Tags { "RenderType"="Opaque"}
 
+		Cull Off
+
 		Pass
 		{
 			CGPROGRAM
@@ -19,8 +21,8 @@
 			#pragma fragment frag
 			
 			#include "UnityCG.cginc"
-			#include "Libraries/NoiseFBM.cginc" 
 			#include "Libraries/UtilGeneral.cginc"
+			#include "Libraries/NoiseFBM.cginc" 
 
 			struct appdata
 			{
