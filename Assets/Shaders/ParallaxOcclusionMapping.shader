@@ -68,7 +68,7 @@ Shader "mSubspace/Parallax Occlusion Mapping"
 			fixed4 frag(v2f i) : SV_Target
 			{
 				float3 worldPos = i.worldPos;
-				float3 worldViewDir = normalize(i.worldPos - _WorldSpaceCameraPos);
+				float3 worldViewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
 
 				float3 worldNormal = normalize(i.worldNormal);
 				float3 worldTangent = normalize(i.worldTangent);
@@ -81,7 +81,7 @@ Shader "mSubspace/Parallax Occlusion Mapping"
 
 				float3x3 worldToTangentSpace = transpose(tangentToWorldSpace);
 
-				float3 tangentCameraPos = normalize(mul(worldToTangentSpace, _WorldSpaceCameraPos));
+				float3 tangentCameraPos = normalize(mul(worldToTangentSpace, worldViewDir));
 
 				float2 dx = ddx(i.uv); // <- partial derivative of the specified value with respect to the screen-space x-coordinate.
 				float2 dy = ddy(i.uv); // <- same but for y.
@@ -94,7 +94,7 @@ Shader "mSubspace/Parallax Occlusion Mapping"
 
 				float2 maxOffset = offsetDir * parallaxLimit;
 
-				int numSamples = (int)lerp(_MaxSamples, _MinSamples, saturate(dot(worldNormal, -worldViewDir)));
+				int numSamples = (int)lerp(_MaxSamples, _MinSamples, saturate(dot(worldNormal, worldViewDir)));
 				float stepSize = 1.0 / (float)numSamples; // The height of the raymarching volume (1) divided by numSamples.
 
 				float currentRayHeight = 1.0;
