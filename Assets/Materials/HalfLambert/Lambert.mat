@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Pixel Spirit Deck
-  m_Shader: {fileID: 4800000, guid: d4486777ab11a3842ab8007d74cc7031, type: 3}
+  m_Name: Lambert
+  m_Shader: {fileID: 4800000, guid: 6cc45bd2e299b0b498f458f996150c68, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -25,13 +25,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _A: 0.5
-    - _B: 0.5
-    - _C: 1
-    - _Index: 38.1
-    - _TileX: 1
-    - _TileY: 1
+    - _Glossiness: 0.5
+    - _Metallic: 0
     m_Colors:
-    - _BackgroundColor: {r: 0, g: 0, b: 0, a: 1}
-    - _ForegroundColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 0.7372549, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
